@@ -1,5 +1,5 @@
-const CreatePlayerMarker = (marker, player) => {
-    return { marker, player };
+const CreatePlayerMarker = (marker, name) => {
+    return { marker, name };
 };
 
 const CreateBoard = () => {
@@ -23,13 +23,45 @@ const CreatePlayer = () => {
 
 const PlayGame = () => { 
     let board = CreateBoard();
-    //let players = CreatePlayer();
-    let winner = CheckForWinner(board);
-    if (winner == 'X' || winner == "O") {
-        print("Game Ended")
-    }
+    let Players = CreatePlayer()
+    let winner = null;
+    let CurrentPlayer = Players.player1
 
+    const check = () => {
+        const result = CheckForWinner(board);
+        winner = result;
+        if (winner === Players.player1.marker || winner === Players.player2.marker ) {
+            console.log("Winner");
+        }
+    };
+
+
+    const play = () => {
+        check();
+        while (!winner && board.includes("")) {
+            console.log(board);
+            let move = prompt(`${CurrentPlayer.name}, choose a spot (0-8):`);
+            board[move] = CurrentPlayer.marker
+
+            if (board[move] !== "") {
+                console.log("Already Taken");
+                continue;
+            }
+
+        if (check()) break;
+        CurrentPlayer = CurrentPlayer === Players.player1 ? Players.player2 : Players.player1;
+        }
+        if (!winner) {
+            printBoard();
+            console.log("It's a draw!");
+        }
+    };
+
+    return {play}
 };
+
+
+
 const CheckForWinner = (board, players) => {
     let IsThereawinner = false;
     const WinningCondition = [
@@ -45,7 +77,6 @@ const CheckForWinner = (board, players) => {
         const cellB = board[b];
         const cellC = board[c];
 
-        console.log(cellA)
         
         if (cellA === "" || cellB === "" || cellC === "") {
             continue;
@@ -59,8 +90,10 @@ const CheckForWinner = (board, players) => {
         }
     }
 
-    return IsThereawinner ? true : false;
+    return IsThereawinner ? cellA : false;
+
 };
 
 
-PlayGame();
+//const game = PlayGame()
+//game.play()
