@@ -1,99 +1,113 @@
-const CreatePlayerMarker = (marker, name) => {
-    return { marker, name };
+const CreatePlayerMarker = (name, marker) => {
+    return { name, marker };
 };
+
 
 const CreateBoard = () => {
-    let board = ["", "", "",
-                 "", "", "",
-                 "", "", ""];
-    return board;
+    return ["", "", "", "", "", "", "", "", ""];
 };
 
-const CreatePlayer = () => {
-    let player1Name = prompt("Player 1 Name");
-    let player1Marker = prompt("Player 1 Marker");
-    let player2Name = prompt("Player 2 Name");
-    let player2Marker = prompt("Player 2 Marker");
-    
-    const player1 = CreatePlayerMarker(player1Marker, player1Name);
-    const player2 = CreatePlayerMarker(player2Marker, player2Name);
-    
-    return { player1, player2 };
+
+const CreatePlayer = (callback) => {
+    document.addEventListener("DOMContentLoaded", () => {
+        const Dialog = document.querySelector("dialog");
+        Dialog.showModal();
+
+        const SubmitButton = document.querySelector(".Start-Game");
+        SubmitButton.addEventListener("click", () => {
+            const player1Name = document.querySelector(".Name_Input").value;
+            const player1Choice = document.querySelector(".Player1_Select").value;
+            const player2Name = document.querySelector(".Name2_Input").value;
+            const player2Choice = document.querySelector(".Player2_Select").value;
+
+            const player1 = CreatePlayerMarker(player1Name, player1Choice);
+            const player2 = CreatePlayerMarker(player2Name, player2Choice);
+
+            Dialog.close();
+
+            callback({ player1, player2 }); 
+        });
+    });
 };
 
-const PlayGame = () => { 
+
+function PlayGame() {
     let board = CreateBoard();
-    let Players = CreatePlayer()
     let winner = null;
-    let CurrentPlayer = Players.player1
+    let CurrentPlayer;
 
-    const check = () => {
-        const result = CheckForWinner(board);
-        winner = result;
-        if (winner === Players.player1.marker || winner === Players.player2.marker ) {
-            console.log("Winner");
-        }
-    };
+    CreatePlayer((Players) => {
+        CurrentPlayer = Players.player1; 
 
-
-    const play = () => {
-        check();
-        while (!winner && board.includes("")) {
-            console.log(board);
-            let move = prompt(`${CurrentPlayer.name}, choose a spot (0-8):`);
-            board[move] = CurrentPlayer.marker
-
-            if (board[move] !== "") {
-                console.log("Already Taken");
-                continue;
+        const check = () => {
+            const result = CheckForWinner(board, Players);
+            if (result) {
+                console.log(`${CurrentPlayer.name} wins!`);
+                winner = result;
+                return true;
             }
+            return false;
+        };
 
-        if (check()) break;
-        CurrentPlayer = CurrentPlayer === Players.player1 ? Players.player2 : Players.player1;
-        }
-        if (!winner) {
-            printBoard();
-            console.log("It's a draw!");
-        }
-    };
+        const play = () => {
+            const Grid = document.querySelectorAll(".Grid");
+            Grid.forEach(cell => {
+                cell.addEventListener("click", () => {
+                    const value = cell.dataset.value;
 
-    return {play}
-};
+                    if (board[value] !== "") {
+                        console.log("Cell already taken!");
+                        return;
+                    }
 
+                    board[value] = CurrentPlayer.marker;
+                    cell.textContent = CurrentPlayer.marker;
+
+                    if (check()) return;
+
+                    if (!board.includes("")) {
+                        winner = "draw";
+                        console.log("It's a draw!");
+                        return;
+                    }
+
+                    CurrentPlayer = CurrentPlayer.marker === Players.player1.marker ? Players.player2 : Players.player1;
+
+                });
+            });
+        };
+
+        play(); 
+    });
+}
 
 
 const CheckForWinner = (board, players) => {
-    let IsThereawinner = false;
     const WinningCondition = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8], // Horizontal Wins
-        [0, 3, 6], [1, 4, 7], [2, 5, 8], // Vertical Wins
-        [0, 4, 8], [2, 4, 6] // Diagonal Wins
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
     ];
 
-    // Check Winning Condition
     for (let i = 0; i < WinningCondition.length; i++) {
         const [a, b, c] = WinningCondition[i];
         const cellA = board[a];
         const cellB = board[b];
         const cellC = board[c];
 
-        
         if (cellA === "" || cellB === "" || cellC === "") {
             continue;
         }
 
-
         if (cellA === cellB && cellB === cellC) {
-            IsThereawinner = true; 
-            console.log(`${players[cellA]} is the winner!`);
-            return players[cellA]; 
+            const winner = players[cellA === players.player1.marker ? "player1" : "player2"];
+            console.log(`${winner.name} wins!`);
+            return winner.marker;
         }
     }
 
-    return IsThereawinner ? cellA : false;
-
+    return false;
 };
 
 
-//const game = PlayGame()
-//game.play()
+PlayGame();

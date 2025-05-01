@@ -16,21 +16,33 @@
     </div>
     <div class="BoardWrapper">
         <div class="Board">
-            <div class="Grid"></div>
-            <div class="Grid"></div>
-            <div class="Grid"></div>
-            <div class="Grid"></div>
-            <div class="Grid"></div>
-            <div class="Grid"></div>
-            <div class="Grid"></div>
-            <div class="Grid"></div>
-            <div class="Grid"></div>
+            <div class="Grid" data-value="0" ></div>
+            <div class="Grid" data-value="1"></div>
+            <div class="Grid" data-value="2"></div>
+            <div class="Grid" data-value="3"></div>
+            <div class="Grid" data-value="4"></div>
+            <div class="Grid" data-value="5"></div>
+            <div class="Grid" data-value="6"></div>
+            <div class="Grid" data-value="7"></div>
+            <div class="Grid" data-value="8"></div>
         </div>
     </div>
-    <dialog open class="modal-dialog">
-        <form>
+    <dialog  class="modal-dialog" >
+        <form method="dialog">
+            <h1> Welcome to Tic Tac Toe</h1>
             <label>Player 1 Name</label>
-            <input type="text" value="" required>
+            <input type="text" value=""  class="Name_Input" required>
+            <select class="Player1_Select" required>
+                <option value="X">X</option>
+                <option value="X">O</option>
+            </select>
+            <label>Player 2 Name</label>
+            <input type="text" value=""  class="Name2_Input" required>
+            <select class="Player2_Select" required>
+                <option value="X">O</option>
+                <option value="X">X</option>
+            </select>
+            <button type="submit" class="Start-Game">Start Game</button>
         </form>
     </dialog>
     <script src="Script/Script.js"></script>
