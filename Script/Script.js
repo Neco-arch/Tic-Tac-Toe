@@ -2,47 +2,52 @@ const CreatePlayerMarker = (name, marker) => {
     return { name, marker };
 };
 
-
 const CreateBoard = () => {
     return ["", "", "", "", "", "", "", "", ""];
 };
 
+const CreatePlayer = async () => {
+    const Dialog = document.querySelector("dialog");
+    const SubmitButton = document.querySelector(".Start-Game");
 
-const CreatePlayer = (callback) => {
-    document.addEventListener("DOMContentLoaded", () => {
-        const Dialog = document.querySelector("dialog");
-        Dialog.showModal();
+    Dialog.showModal();
 
-        const SubmitButton = document.querySelector(".Start-Game");
+    const playerDataPromise = new Promise((resolve) => {
         SubmitButton.addEventListener("click", () => {
             const player1Name = document.querySelector(".Name_Input").value;
             const player1Choice = document.querySelector(".Player1_Select").value;
             const player2Name = document.querySelector(".Name2_Input").value;
             const player2Choice = document.querySelector(".Player2_Select").value;
-
-            const player1 = CreatePlayerMarker(player1Name, player1Choice);
-            const player2 = CreatePlayerMarker(player2Name, player2Choice);
-
+            let Player1 = CreatePlayerMarker(player1Name, player1Choice);
+            let Player2 = CreatePlayerMarker(player2Name, player2Choice);
             Dialog.close();
-
-            callback({ player1, player2 }); 
+            resolve({ Player1, Player2 });
         });
     });
+
+    const playerData = await playerDataPromise;
+    return playerData;
 };
 
-
 function PlayGame() {
+    let Counter = 0
+    const Status = document.querySelector(".Status");
+    const Reset_Button = document.querySelector(".Reset_Button");
+    let Player1;
+    let Player2;
+    let CurrentPlayer;
     let board = CreateBoard();
     let winner = null;
-    let CurrentPlayer;
 
-    CreatePlayer((Players) => {
-        CurrentPlayer = Players.player1; 
+    CreatePlayer().then((First_Player) => {
+        Player1 = First_Player.Player1;
+        Player2 = First_Player.Player2;
+        CurrentPlayer = Player1;
 
         const check = () => {
-            const result = CheckForWinner(board, Players);
+            const result = CheckForWinner(board, { player1: Player1, player2: Player2 });
             if (result) {
-                console.log(`${CurrentPlayer.name} wins!`);
+                Status.textContent = `${CurrentPlayer.name} wins!`;
                 winner = result;
                 return true;
             }
@@ -53,31 +58,51 @@ function PlayGame() {
             const Grid = document.querySelectorAll(".Grid");
             Grid.forEach(cell => {
                 cell.addEventListener("click", () => {
-                    const value = cell.dataset.value;
-
-                    if (board[value] !== "") {
-                        console.log("Cell already taken!");
+                    if (board[cell.dataset.value] !== "" || winner) {
+                        if (winner === null) {
+                            Status.textContent = "Cell already taken or game over!";
+                            Counter += 1
+                        }
+                        if (Counter >= 2  ) {
+                            Status.textContent = `${CurrentPlayer.name} Foul` 
+                            CurrentPlayer = CurrentPlayer.marker === Player1.marker ? Player2 : Player1;
+                            Status.textContent = `${CurrentPlayer.name}'s Turn`;
+                        }
                         return;
                     }
 
-                    board[value] = CurrentPlayer.marker;
+                    board[cell.dataset.value] = CurrentPlayer.marker;
                     cell.textContent = CurrentPlayer.marker;
 
                     if (check()) return;
 
                     if (!board.includes("")) {
                         winner = "draw";
-                        console.log("It's a draw!");
+                        Status.textContent = "It's a draw!";
                         return;
                     }
 
-                    CurrentPlayer = CurrentPlayer.marker === Players.player1.marker ? Players.player2 : Players.player1;
-
+                    CurrentPlayer = CurrentPlayer.marker === Player1.marker ? Player2 : Player1;
+                    Status.textContent = `${CurrentPlayer.name}'s Turn`;
                 });
             });
         };
 
-        play(); 
+        const Reset = () => {
+            Reset_Button.addEventListener("click", () => {
+                board = CreateBoard(); 
+                const Grid = document.querySelectorAll(".Grid");
+                Grid.forEach(cell => {
+                    cell.textContent = ""; 
+                });
+                winner = null;
+                CurrentPlayer = Player1; 
+                Status.textContent = `${CurrentPlayer.name}'s Turn`;
+            });
+        };
+
+        play();
+        Reset();
     });
 }
 
@@ -100,7 +125,7 @@ const CheckForWinner = (board, players) => {
         }
 
         if (cellA === cellB && cellB === cellC) {
-            const winner = players[cellA === players.player1.marker ? "player1" : "player2"];
+            const winner = cellA === players.player1.marker ? players.player1 : players.player2;
             console.log(`${winner.name} wins!`);
             return winner.marker;
         }
@@ -108,6 +133,5 @@ const CheckForWinner = (board, players) => {
 
     return false;
 };
-
 
 PlayGame();
